@@ -85,14 +85,29 @@ void GPIO_buttonSetup()
 	GPIO_init(&button);
 
 }
+
+void GPIO_ledsetup()
+{
+	GPIO_Handle_t led;
+	led.pGPIOx = GPIOA;
+	/*
+	 * Push Pull config
+	*/
+	led.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN5;
+	led.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
+	led.GPIO_PinConfig.GPIO_PinOPType = GPIO_OTYPE_PP;
+	led.GPIO_PinConfig.GPIO_PinPUPDcontrol = GPIO_NO_PUPD;
+	led.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_MEDIUM;
+	GPIO_init(&led);
+}
 int main()
 {
 
 
-	char text[] = "two";
+	char text[] = "why";
 
 	GPIO_buttonSetup();
-
+	GPIO_ledsetup();
 	//setup GPIO pins for SPI communication
 	SPI_GPIO_PinSetup();
 
@@ -104,13 +119,11 @@ int main()
 
 
 
-
 	while(1){
 
 	uint8_t len = strlen(text);
 
 	SPI_PeripheralControl(SPI2, ENABLE);
-
 
 
 	while(GPIO_ReadInputPin(GPIOC, GPIO_PIN13));
@@ -120,13 +133,14 @@ int main()
 
 	//send length info
 	SPI_SendData(SPI2, &len, 1);
-
+	//delay();
 	//send data
 	SPI_SendData(SPI2, (uint8_t*)text, strlen(text));
+	GPIO_ToggleOutputPin(GPIOA, GPIO_PIN5);
+	delay();
+	//while(getFlagStatus(SPI2, SPI_SR_BSY));
 
-	while(getFlagStatus(SPI2, SPI_SR_BSY));
-
-	SPI_PeripheralControl(SPI2, DISABLE);
+	//SPI_PeripheralControl(SPI2, DISABLE);
 	}
 
 return 0;
